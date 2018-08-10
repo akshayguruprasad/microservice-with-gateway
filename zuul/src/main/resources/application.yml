@@ -1,0 +1,17 @@
+server:
+  port: 8673
+zuul:
+  routes:
+    noteapplication:
+      path: /noteservice/**
+      serviceId: noteservice
+    userapplication:
+      path: /userservice/**
+      serviceId: userservice
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://127.0.0.1:8761/eureka/
+spring:
+  application:
+    name: zuul
