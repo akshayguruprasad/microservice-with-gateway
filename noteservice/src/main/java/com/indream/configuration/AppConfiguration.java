@@ -1,18 +1,18 @@
 package com.indream.configuration;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.cloud.openfeign.FeignContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.indream.interceptors.TokenValidatorInterceptor;
+import com.indream.feingclient.UserCallHandler;
 import com.indream.noteservice.service.NoteService;
 import com.indream.noteservice.service.NoteServiceImpl;
 import com.indream.util.MessageService;
@@ -114,23 +114,23 @@ public class AppConfiguration extends WebMvcConfigurerAdapter {
 
 	}
 
-	/*
-	 * @purpose APPLICATION SUPPORTS THE INTERCEPTORS AND ADDING TO REGISTERY
-	 *
-	 * @author akshay
-	 * 
-	 * @com.indream.fundoo.configuration
-	 * 
-	 * @since Jul 24, 2018
-	 *
-	 */
-	@Override
-	public void addInterceptors(InterceptorRegistry interceptorRegistry) {
-		interceptorRegistry.addInterceptor(getTokenInterceptor()).addPathPatterns("/noteapplication/**")
-				.addPathPatterns("/userapplication/update/password").addPathPatterns("/userapplication/update/password")
-				.addPathPatterns("/userapplication/delete/user").addPathPatterns("/userapplication/activate/account");
-
-	}
+//	/*
+//	 * @purpose APPLICATION SUPPORTS THE INTERCEPTORS AND ADDING TO REGISTERY
+//	 *
+//	 * @author akshay
+//	 * 
+//	 * @com.indream.fundoo.configuration
+//	 * 
+//	 * @since Jul 24, 2018
+//	 *
+//	 */
+//	@Override
+//	public void addInterceptors(InterceptorRegistry interceptorRegistry) {
+//		interceptorRegistry.addInterceptor(getTokenInterceptor()).addPathPatterns("/noteapplication/**")
+//				.addPathPatterns("/userapplication/update/password").addPathPatterns("/userapplication/update/password")
+//				.addPathPatterns("/userapplication/delete/user").addPathPatterns("/userapplication/activate/account");
+//
+//	}
 
 	@Bean
 	public NoteService getService() {
@@ -138,21 +138,21 @@ public class AppConfiguration extends WebMvcConfigurerAdapter {
 		return new NoteServiceImpl();
 
 	}
-
-	/*
-	 * @purpose CREATION OF INTERCEPTOR BEAN
-	 *
-	 * @author akshay
-	 * 
-	 * @com.indream.fundoo.configuration
-	 * 
-	 * @since Jul 24, 2018
-	 *
-	 */
-	@Bean
-	public TokenValidatorInterceptor getTokenInterceptor() {
-		return new TokenValidatorInterceptor();// NEW OPERATOR
-	}
+//
+//	/*
+//	 * @purpose CREATION OF INTERCEPTOR BEAN
+//	 *
+//	 * @author akshay
+//	 * 
+//	 * @com.indream.fundoo.configuration
+//	 * 
+//	 * @since Jul 24, 2018
+//	 *
+//	 */
+//	@Bean
+//	public TokenValidatorInterceptor getTokenInterceptor() {
+//		return new TokenValidatorInterceptor();// NEW OPERATOR
+//	}
 
 	@Bean
 	public RestTemplate getRestTemplate() {
@@ -163,4 +163,6 @@ public class AppConfiguration extends WebMvcConfigurerAdapter {
 
 	}
 
+	
+	
 }// AppCOnfiguration class ends

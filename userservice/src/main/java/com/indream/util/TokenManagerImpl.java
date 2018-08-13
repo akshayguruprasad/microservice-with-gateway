@@ -51,6 +51,7 @@ public class TokenManagerImpl implements TokenManager {
 	JwtBuilder jwtbuilder = Jwts.builder().setClaims(claims);
 	jwtbuilder.setIssuedAt(date);// ISSUED ON
 	jwtbuilder.setIssuer(requester.getEmail());// ISSUER EMAIL ID
+	System.out.println("secret key value is ::"+env.getProperty("secretkey"));
 	jwtbuilder.signWith(SignatureAlgorithm.HS256, env.getProperty("secretkey"));
 	token = jwtbuilder.compact();// BUILD TOKEN
 	LOG.info("Response  " + token);

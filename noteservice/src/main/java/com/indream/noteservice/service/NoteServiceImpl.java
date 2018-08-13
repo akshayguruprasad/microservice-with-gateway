@@ -15,12 +15,12 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import com.indream.exceptionhandler.LabelException;
 import com.indream.exceptionhandler.NoteException;
 import com.indream.exceptionhandler.UserException;
+import com.indream.feingclient.UserCallHandler;
 import com.indream.noteservice.dao.NoteDao;
 import com.indream.noteservice.model.LabelEntity;
 import com.indream.noteservice.model.NoteDto;
@@ -44,15 +44,12 @@ public class NoteServiceImpl implements NoteService {
 	private NoteDao dao;
 	@Autowired
 	private Environment env;
-
 	@Autowired
-	RestTemplate restTemplate;
-
+	private UserCallHandler userCallHandler;
 	@Autowired
-	NoteMongoRepository noteMongoRepository;
-
+	private NoteMongoRepository noteMongoRepository;
 	@Autowired
-	LabelMongoRepository labelMongoRepository;
+	private LabelMongoRepository labelMongoRepository;
 
 	/*
 	 * @purpose CREATE NOTE METHOD
@@ -72,15 +69,16 @@ public class NoteServiceImpl implements NoteService {
 		String userId = this.getUserId(token);// GET USER ID
 		validateUser(userId);// VALIDATE THE USER
 		noteEntity.setUserId(userId);// IF TRUE THEN SET USERID
-		String id = null;
 		noteEntity = noteMongoRepository.save(noteEntity);
+		PreConditions.checkNull(noteEntity.getId(), env.getProperty("note.save.error.message"), NoteException.class);
 		try {
-			id = dao.saveElasticNote(noteEntity);
-			PreConditions.checkNull(id, env.getProperty("note.save.error.message"), NoteException.class);
-			return id;
+			PreConditions.checkNull(dao.saveElasticNote(noteEntity), env.getProperty("note.save.error.message"),
+					NoteException.class);
 		} catch (IOException e) {
+			noteMongoRepository.delete(noteEntity);
 			throw new NoteException(env.getProperty("note.save.error.message"));
 		}
+		return noteEntity.getId();
 	}
 
 	/*
@@ -101,6 +99,7 @@ public class NoteServiceImpl implements NoteService {
 		noteDto.setLastModified(new Date());// LAST MODIFIED SET VALUE
 		NoteEntity noteEntity = Utility.convert(noteDto, NoteEntity.class);// MODEL MAPPER TO CONVERT
 		noteEntity = noteMongoRepository.save(noteEntity);
+		PreConditions.checkNull(noteEntity.getId(), env.getProperty("note.update.error.message"), NoteException.class);
 		try {
 			dao.updateElasticNote(noteEntity);
 		} catch (IOException e) {
@@ -122,15 +121,15 @@ public class NoteServiceImpl implements NoteService {
 	public void deleteNote(String noteId, String token) {
 		String userId = this.getUserId(token);
 		this.validNote(noteId, userId);
-		noteMongoRepository.deleteById(userId);
 		try {
+			noteMongoRepository.deleteById(userId);
 			List<NoteEntity> noteEntities = (List<NoteEntity>) dao.searchElasticNote(userId);
 			NoteEntity noteEntity = noteEntities.stream().filter(p -> p.getId().equals(noteId)).findFirst()
 					.orElse(null);
 			PreConditions.checkFalse(noteEntity.isTrashed(), env.getProperty("note.trashed.not.error.message"),
 					NoteException.class);
 			dao.deleteElasticNote(noteEntity.getId());
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new NoteException(env.getProperty("note.delete.error.message"));
 		}
 	}
@@ -344,11 +343,8 @@ public class NoteServiceImpl implements NoteService {
 	 *
 	 */
 	private void validateUser(String userId) throws UserException {// CONTACT THE USER MODULE TO GET THE USER CONTENT
-		ResponseEntity<String> data = restTemplate.getForEntity("http://localhost:8080/userapplication/user/" + userId,
-				String.class);
-		UserEntity user = Utility.convertFromJSONString(data.getBody(), UserEntity.class);
-		PreConditions.checkNull(user, env.getProperty("user.found.not.error.message"), UserException.class);
-		PreConditions.checkFalse(user.isActive(), env.getProperty("user.inactive.message"), UserException.class);
+
+		this.findUserEntityById(userId);
 	}
 
 	/*
@@ -423,13 +419,13 @@ public class NoteServiceImpl implements NoteService {
 		this.validateUser(userId);
 		this.validNote(noteId, userId);
 		NoteEntity noteEntity = null;
-		
+
 		try {
 			noteEntity = dao.getElasticNoteEntity("id", noteId);
 			LabelEntity label = this.getLabelEntity(labelId);
 			this.validLabel(userId, label);
 			noteEntity.getLabel().add(labelId);
-			noteEntity=noteMongoRepository.save(noteEntity);
+			noteEntity = noteMongoRepository.save(noteEntity);
 			dao.updateElasticNote(noteEntity);
 		} catch (IOException e) {
 			throw new NoteException(env.getProperty("label.note.set.error.message"));
@@ -476,7 +472,7 @@ public class NoteServiceImpl implements NoteService {
 		this.validLabel(userId, labelEntity);
 		labelEntity.setLabelName(label);
 		try {
-			labelEntity=this.labelMongoRepository.save(labelEntity);
+			labelEntity = this.labelMongoRepository.save(labelEntity);
 			dao.updateElasticLabel(labelEntity);
 		} catch (IOException e) {
 
@@ -629,7 +625,7 @@ public class NoteServiceImpl implements NoteService {
 
 			}
 			note.setArchived(false);
-			note=this.noteMongoRepository.save(note);
+			note = this.noteMongoRepository.save(note);
 			dao.updateElasticNote(note);
 		} catch (IOException e) {
 			throw new NoteException(env.getProperty("note.unarchive.error.message"));
@@ -659,7 +655,7 @@ public class NoteServiceImpl implements NoteService {
 
 			}
 			note.setPinned(false);
-			note=this.noteMongoRepository.save(note);
+			note = this.noteMongoRepository.save(note);
 			dao.updateElasticNote(note);
 		} catch (IOException e) {
 			throw new NoteException(env.getProperty("note.unpin.error.message"));
@@ -689,7 +685,7 @@ public class NoteServiceImpl implements NoteService {
 			}
 			UrlEntity urlEntity = this.getScrappedData(url);
 			note.getEntities().add(urlEntity);
-			note=this.noteMongoRepository.save(note);
+			note = this.noteMongoRepository.save(note);
 			dao.updateElasticNote(note);
 		} catch (IOException e) {
 			throw new NoteException(env.getProperty("note.url.add.error.message"));
@@ -746,6 +742,20 @@ public class NoteServiceImpl implements NoteService {
 			return element.attr("src");
 		}
 		return null;
+
+	}
+
+	@Override
+	public UserEntity findUserEntityById(String userId) {
+
+		UserEntity user = userCallHandler.findUserEntityById(userId);
+		System.out.println("the exchange value is ");
+		System.out.println(user);
+
+		PreConditions.checkNull(user, env.getProperty("user.found.not.error.message"), UserException.class);
+		PreConditions.checkFalse(user.isActive(), env.getProperty("user.inactive.message"), UserException.class);
+
+		return user;
 
 	}
 

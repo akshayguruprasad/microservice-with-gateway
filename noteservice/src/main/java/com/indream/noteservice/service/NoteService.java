@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.indream.feingclient.UserCallHandler;
 import com.indream.noteservice.model.NoteDto;
 import com.indream.noteservice.model.NoteEntity;
 
@@ -13,7 +14,7 @@ import com.indream.noteservice.model.NoteEntity;
  * @author Akshay
  *
  */
-public interface NoteService {
+public interface NoteService  extends UserCallHandler{
 	String createNote(NoteDto note, String token, HttpServletRequest request);
 
 	void updateNote(NoteDto noteDto, String token);

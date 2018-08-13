@@ -46,8 +46,8 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private AmqpTemplate template;// AMQP TEMPLATE
 	
-//	@Autowired
-//	private UserElasticRepository userElasticRepository;
+
+	
 	/*
 	 * @purpose REGISTER THE USER INTO THE SYSTEM
 	 *
@@ -125,7 +125,7 @@ public class UserServiceImpl implements UserService {
 			throw new UserException(env.getProperty("user.password.mismatch.error.message"));
 		}
 		userIdToken = manager.generateToken(userEntity);// IF VALID LOGIN THEN PROVIDE THE USER WITH APPROPRIATE TOKEN
-
+System.out.println(userIdToken);
 		return userIdToken;
 	}
 

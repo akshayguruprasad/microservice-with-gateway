@@ -48,7 +48,7 @@ public class NoteController {
 	@RequestMapping(path = "/createnote", method = RequestMethod.POST)
 	public ResponseEntity<NoteResponse> createNote(@RequestBody NoteDto noteEntityDTO, HttpServletRequest request) {
 		try {
-			String token = (String) request.getSession().getAttribute("token");
+			String token = (String) request.getSession().getAttribute("userId");
 			noteService.createNote(noteEntityDTO, token,request);
 		} catch (Exception e) {
 

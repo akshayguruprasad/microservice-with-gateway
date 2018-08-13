@@ -1,4 +1,4 @@
-package com.indream.userservice.model;
+package com.indream.util;
 
 import java.io.Serializable;
 import java.util.Date;

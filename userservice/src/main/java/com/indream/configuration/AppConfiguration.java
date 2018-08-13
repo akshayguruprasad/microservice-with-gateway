@@ -3,6 +3,7 @@ package com.indream.configuration;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,8 +22,8 @@ import com.indream.util.TokenManagerImpl;
  *
  */
 @Configuration
-//@PropertySource(value = { "classpath:application.properties", "classpath:ErrorProperties.properties",
-//		"classpath:LiteralProperties.properties", "classpath:mail.properties", "classpath:credentials.properties" })
+@PropertySource(value = { "classpath:application.properties", "classpath:ErrorProperties.properties",
+		"classpath:LiteralProperties.properties", "classpath:mail.properties", "classpath:credentials.properties" })
 public class AppConfiguration {
 
 	/*
