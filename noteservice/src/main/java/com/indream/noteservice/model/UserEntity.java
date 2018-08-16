@@ -64,6 +64,12 @@ public class UserEntity implements Serializable {
 		return isActive;
 	}
 
+	@Override
+	public String toString() {
+		return "UserEntity [id=" + id + ", email=" + email + ", mobile=" + mobile + ", password=" + password
+				+ ", isActive=" + isActive + ", name=" + name + "]";
+	}
+
 	public void setActive(boolean isActive) {
 		this.isActive = isActive;
 	}

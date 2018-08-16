@@ -1,20 +1,15 @@
 package com.indream.configuration;
 
 import org.modelmapper.ModelMapper;
-import org.springframework.cloud.openfeign.FeignContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.indream.feingclient.UserCallHandler;
-import com.indream.noteservice.service.NoteService;
-import com.indream.noteservice.service.NoteServiceImpl;
 import com.indream.util.MessageService;
 import com.indream.util.SpringMailingServiceImpl;
 import com.indream.util.TokenManagerImpl;
@@ -29,7 +24,7 @@ import com.indream.util.TokenManagerImpl;
 @PropertySource(value = { "classpath:application.properties", "classpath:ErrorProperties.properties",
 		"classpath:LiteralProperties.properties", "classpath:mail.properties", "classpath:credentials.properties" })
 
-public class AppConfiguration extends WebMvcConfigurerAdapter {
+public class AppConfiguration {
 
 	/*
 	 * @purpose TOKEN MANAGER SINGLETON BEAN CREATED TO USE
@@ -132,12 +127,12 @@ public class AppConfiguration extends WebMvcConfigurerAdapter {
 //
 //	}
 
-	@Bean
-	public NoteService getService() {
-
-		return new NoteServiceImpl();
-
-	}
+//	@Bean
+//	public NoteService noteService() {
+//
+//		return new NoteServiceImpl();
+//
+//	}
 //
 //	/*
 //	 * @purpose CREATION OF INTERCEPTOR BEAN
@@ -163,6 +158,6 @@ public class AppConfiguration extends WebMvcConfigurerAdapter {
 
 	}
 
-	
-	
-}// AppCOnfiguration class ends
+
+}// AppConfiguration class ends
+

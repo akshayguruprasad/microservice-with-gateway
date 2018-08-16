@@ -20,7 +20,6 @@ import com.indream.userservice.model.UserDto;
 import com.indream.userservice.model.UserEntity;
 import com.indream.userservice.model.UserResponse;
 import com.indream.userservice.service.UserService;
-import com.indream.util.Utility;
 
 @RestController
 @RequestMapping("/userapplication")
@@ -28,14 +27,10 @@ import com.indream.util.Utility;
 public class UserController {
 	@Autowired
 	private UserService service;
-//	@Value("${name}")
-//	private String name;
 	@Autowired
 	private I18NSpec i18N;
-
 	@Autowired
 	private Environment env;
-
 	final Logger LOG = Logger.getLogger(UserController.class);
 
 	@RequestMapping(path = "/registeration", method = RequestMethod.POST)
@@ -47,7 +42,7 @@ public class UserController {
 
 	@RequestMapping(path = "/activate/account", method = RequestMethod.GET)
 	public ResponseEntity<UserResponse> activateAccount(HttpServletRequest request) {
-		String token = (String) request.getSession().getAttribute("token");
+		String token = (String) request.getHeader("userId");
 		service.activateUser(token);
 		return new ResponseEntity<UserResponse>(new UserResponse(i18N.getMessage("user.activate.success"), 2),
 				HttpStatus.OK);
@@ -71,7 +66,7 @@ public class UserController {
 	@RequestMapping(path = "/update/password", method = RequestMethod.PUT)
 
 	public ResponseEntity<UserResponse> updatePassword(@RequestBody UserDto userDto, HttpServletRequest request) {
-		String token = (String) request.getSession().getAttribute("token");
+		String token = (String) request.getHeader("userId");
 		service.updatePassword(token, userDto);
 		return new ResponseEntity<UserResponse>(new UserResponse(i18N.getMessage("user.password.update.success"), 5),
 				HttpStatus.OK);
@@ -81,25 +76,29 @@ public class UserController {
 
 	public ResponseEntity<UserResponse> deleteUser(HttpServletRequest request) {
 
-		String token = (String) request.getSession().getAttribute("token");
+		String token = (String) request.getHeader("userId");
 
 		service.deleteUser(token);
 		return new ResponseEntity<UserResponse>(new UserResponse(i18N.getMessage("user.delete.success"), 6),
 				HttpStatus.OK);
 	}
 
-	@GetMapping("/user/{userId}")
-	public ResponseEntity<UserResponse> getUser(HttpServletRequest request, @PathVariable("userId") String userId) {
+	@GetMapping(path = "/user")
+	public UserEntity getUser(HttpServletRequest request) {
+		String userId = (String) request.getHeader("user");
+
 		UserEntity user = service.getUser(userId);
-		String message = Utility.covertToJSONString(user);
-		return new ResponseEntity<UserResponse>(new UserResponse(message, 7), HttpStatus.OK);
+		System.out.println("sending the user to the service asked");
+		System.out.println(user);
+		return user;
 	}
 
 	@GetMapping(path = "/msg")
 	public String message(HttpServletRequest request) {
-		String data = request.getHeader("name");
+		String data = "Hello world";
 		return data;
 
 	}
 
 }
+//String token = (String) request.getSession().getAttribute("token");

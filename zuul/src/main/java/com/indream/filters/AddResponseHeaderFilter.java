@@ -1,6 +1,9 @@
 package com.indream.filters;
 
+import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -44,10 +47,17 @@ public class AddResponseHeaderFilter extends ZuulFilter {
 	}
 
 	private Object callFilter() {
-		String userTokenValue = RequestContext.getCurrentContext().getZuulRequestHeaders().get("authorization");
-		Map<?, ?> result = (userTokenValue == null) ? null : redisOperation.checkToken(userTokenValue);
-		if (result != null) {
+		System.out.println("Enters the callfilter ");
+
+		String userTokenValue =		RequestContext.getCurrentContext().getRequest().getHeader("authorization");
+	
+		System.out.println(userTokenValue);
+
+		
+		Map<?, ?> result=null;
+		if ((result=redisOperation.checkToken(userTokenValue)) != null) {
 			String userId = (String) result.get("userId");
+			System.out.println("Current value for the userId " + userId);
 			RequestContext.getCurrentContext().addZuulRequestHeader("userId", userId);
 		}
 		return null;

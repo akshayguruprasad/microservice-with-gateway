@@ -31,7 +31,7 @@ public class TokenManagerImpl implements TokenManager {
 		LOG.info("method param : " + token);
 
 		try {
-			Jws<Claims> jwtClaims = Jwts.parser().setSigningKey(env.getProperty("secretkey")).parseClaimsJws(token);
+			Jws<Claims> jwtClaims = Jwts.parser().setSigningKey("thisissparta").parseClaimsJws(token);
 			Claims claims = jwtClaims.getBody();// GET THE CLAIMS FROM THE TOEK WHICH IS PARSED
 			return claims;
 		} catch (Exception e) {

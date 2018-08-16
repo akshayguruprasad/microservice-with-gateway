@@ -15,7 +15,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.stereotype.Service;
 
 import com.indream.exceptionhandler.LabelException;
 import com.indream.exceptionhandler.NoteException;
@@ -39,13 +39,15 @@ import com.indream.util.Utility;
  *
  */
 @SuppressWarnings("unchecked")
+@Service
 public class NoteServiceImpl implements NoteService {
 	@Autowired
 	private NoteDao dao;
 	@Autowired
 	private Environment env;
 	@Autowired
-	private UserCallHandler userCallHandler;
+	UserCallHandler userCallHandler;
+
 	@Autowired
 	private NoteMongoRepository noteMongoRepository;
 	@Autowired
@@ -129,6 +131,7 @@ public class NoteServiceImpl implements NoteService {
 			PreConditions.checkFalse(noteEntity.isTrashed(), env.getProperty("note.trashed.not.error.message"),
 					NoteException.class);
 			dao.deleteElasticNote(noteEntity.getId());
+			
 		} catch (Exception e) {
 			throw new NoteException(env.getProperty("note.delete.error.message"));
 		}
@@ -343,8 +346,15 @@ public class NoteServiceImpl implements NoteService {
 	 *
 	 */
 	private void validateUser(String userId) throws UserException {// CONTACT THE USER MODULE TO GET THE USER CONTENT
-
-		this.findUserEntityById(userId);
+		UserEntity user = null;
+		try {
+			user = userCallHandler.findUserEntityById(userId);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		PreConditions.checkNull(user, env.getProperty("user.found.not.error.message"), UserException.class);
+		PreConditions.checkFalse(user.isActive(), env.getProperty("user.inactive.message"), UserException.class);
+		return;
 	}
 
 	/*
@@ -698,7 +708,7 @@ public class NoteServiceImpl implements NoteService {
 	 * @purpose
 	 *
 	 *
-	 * @author akshay
+	 * @author akshayvalidateUser
 	 * 
 	 * @com.indream.fundoo.noteservice.service
 	 * 
@@ -716,7 +726,6 @@ public class NoteServiceImpl implements NoteService {
 			urlEntity.setUrl(url);
 			urlEntity.setImage(getImage(document));
 			urlEntity.setDetail(document.select("meta[name=description]").get(0).attr("content"));
-			System.out.println(urlEntity);
 		} catch (IOException e) {
 			throw new NoteException(env.getProperty("note.scaping.error.message"));
 		}
@@ -742,20 +751,6 @@ public class NoteServiceImpl implements NoteService {
 			return element.attr("src");
 		}
 		return null;
-
-	}
-
-	@Override
-	public UserEntity findUserEntityById(String userId) {
-
-		UserEntity user = userCallHandler.findUserEntityById(userId);
-		System.out.println("the exchange value is ");
-		System.out.println(user);
-
-		PreConditions.checkNull(user, env.getProperty("user.found.not.error.message"), UserException.class);
-		PreConditions.checkFalse(user.isActive(), env.getProperty("user.inactive.message"), UserException.class);
-
-		return user;
 
 	}
 
