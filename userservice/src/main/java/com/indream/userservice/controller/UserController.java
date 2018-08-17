@@ -8,6 +8,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -86,10 +87,7 @@ public class UserController {
 	@GetMapping(path = "/user")
 	public UserEntity getUser(HttpServletRequest request) {
 		String userId = (String) request.getHeader("user");
-
 		UserEntity user = service.getUser(userId);
-		System.out.println("sending the user to the service asked");
-		System.out.println(user);
 		return user;
 	}
 
@@ -97,6 +95,14 @@ public class UserController {
 	public String message(HttpServletRequest request) {
 		String data = "Hello world";
 		return data;
+
+	}
+
+	@DeleteMapping(path = "/delete/userclient")
+	public boolean deleteSingleUser(HttpServletRequest request) {
+		String userId = (String) request.getHeader("user");
+		service.deleteUser(userId);
+		return true;
 
 	}
 

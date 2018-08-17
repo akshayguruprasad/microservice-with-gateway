@@ -1,9 +1,6 @@
 package com.indream.filters;
 
-import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -14,7 +11,7 @@ import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
 
-public class AddResponseHeaderFilter extends ZuulFilter {
+public class AddRequestFilter extends ZuulFilter {
 
 	@Autowired
 	HttpServletRequest request;
@@ -30,7 +27,6 @@ public class AddResponseHeaderFilter extends ZuulFilter {
 
 	@Override
 	public int filterOrder() {
-
 		return 1;
 	}
 
@@ -47,19 +43,24 @@ public class AddResponseHeaderFilter extends ZuulFilter {
 	}
 
 	private Object callFilter() {
-		System.out.println("Enters the callfilter ");
+		String uri = RequestContext.getCurrentContext().getRequest().getRequestURI();
+		if (uri.startsWith("/userservice/userapplication/login")
+				|| uri.startsWith("/userservice/userapplication/registeration")
+				|| uri.startsWith("/userservice/userapplication/reset/password/")) {
 
-		String userTokenValue =		RequestContext.getCurrentContext().getRequest().getHeader("authorization");
-	
-		System.out.println(userTokenValue);
+			return null;
 
-		
-		Map<?, ?> result=null;
-		if ((result=redisOperation.checkToken(userTokenValue)) != null) {
+		}
+
+		String userTokenValue = RequestContext.getCurrentContext().getRequest().getHeader("authorization");
+		System.out.println(userTokenValue + " -- value ");
+		Map<?, ?> result = null;
+		if ((result = redisOperation.checkToken(userTokenValue)) != null) {
 			String userId = (String) result.get("userId");
-			System.out.println("Current value for the userId " + userId);
+			System.out.println("UserId " + userId);
 			RequestContext.getCurrentContext().addZuulRequestHeader("userId", userId);
 		}
+		System.out.println("Returning the value ");
 		return null;
 	}
 

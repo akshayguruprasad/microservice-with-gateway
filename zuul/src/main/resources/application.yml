@@ -8,6 +8,8 @@ zuul:
     userapplication:
       path: /userservice/**
       serviceId: userservice
+  host:
+    socket-timeout-millis: 60000
 eureka:
   client:
     serviceUrl:
@@ -15,3 +17,15 @@ eureka:
 spring:
   application:
     name: zuul
+    
+ribbon:
+  ConnectTimeout: 60000
+  ReadTimeout: 600000
+
+  
+hystrix:
+    command:
+        default:
+            execution:
+                timeout:
+                    enabled: false

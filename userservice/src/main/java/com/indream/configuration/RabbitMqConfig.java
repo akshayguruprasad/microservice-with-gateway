@@ -85,19 +85,18 @@ public class RabbitMqConfig {
 	 * @since Jul 24, 2018
 	 *
 	 */
-	@Bean
+	/*@Bean
 	public SimpleMessageListenerContainer container(ConnectionFactory connectionFactory) {
 		SimpleMessageListenerContainer container = null;
 		try {
 			container = new SimpleMessageListenerContainer(connectionFactory);
 			container.setQueueNames(QUEUENAME);
-			container.setMessageListener(new MailListener());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return container;
 
-	}
+	}*/
 
 	/*
 	 * @purpose RABBITMQ TEMPLATE TO AVOID CONFIGURATIONS

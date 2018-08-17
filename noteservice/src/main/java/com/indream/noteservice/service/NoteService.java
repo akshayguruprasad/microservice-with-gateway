@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.indream.noteservice.model.NoteDto;
 import com.indream.noteservice.model.NoteEntity;
+import com.indream.noteservice.model.ReminderDto;
 
 /**
  * NOTESERVICE INTERFACE
@@ -30,7 +31,7 @@ public interface NoteService  {
 
 	void restoreNote(String noteId, String token);
 
-	void reminderNote(NoteDto noteDto, String token);
+	void reminderNote(ReminderDto noteDto, String token);
 
 	String createLabel(String label, String token);
 

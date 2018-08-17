@@ -41,7 +41,7 @@ public class NoteDaoImpl implements NoteDao {
 	private final static String NOTE_TYPE = "notes";
 	private final static String LABEL_INDEX = "labelindex";
 	private final static String LABEL_TYPE = "labels";
-	private static final String USER_ID = null;
+	private static final String USER_ID = "userId";
 	@Autowired
 	private RestHighLevelClient client;
 
@@ -213,6 +213,11 @@ public class NoteDaoImpl implements NoteDao {
 		return labelList;
 	}
 
+	/**
+	 * @param data
+	 * @param classType
+	 * @return
+	 */
 	private <T> List<?> getEntities(T[] data, Class<?> classType) {
 
 		return jacksonMapper.convertValue(data,
@@ -240,9 +245,11 @@ public class NoteDaoImpl implements NoteDao {
 		SearchRequest searchRequest = new SearchRequest(indices, searchSourceBuilder);
 		SearchResponse response = client.search(searchRequest);
 		List<NoteEntity> noteList = new ArrayList<NoteEntity>();
-		for (SearchHit searchHit : response.getHits().getHits()) {
+		SearchHit[] hits = response.getHits().getHits();
+		for (SearchHit searchHit :hits ) {
 			NoteEntity noteEntity = jacksonMapper.convertValue(searchHit.getSourceAsMap(), NoteEntity.class);
 			noteList.add(noteEntity);
+			System.out.println("--"+noteEntity);
 		}
 		return noteList;
 	}
@@ -294,6 +301,7 @@ public class NoteDaoImpl implements NoteDao {
 		SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 		searchSourceBuilder.query(QueryBuilders.matchQuery(key, value));
 		SearchRequest searchRequest = new SearchRequest(indices, searchSourceBuilder);
+		
 		SearchResponse response = client.search(searchRequest);
 		SearchHit[] searches = response.getHits().getHits();
 		System.out.println("till here its clean ");

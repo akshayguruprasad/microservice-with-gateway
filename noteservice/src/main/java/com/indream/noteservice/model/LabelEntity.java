@@ -3,7 +3,9 @@ package com.indream.noteservice.model;
 import java.io.Serializable;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
+@Document(collection="labels")
 public class LabelEntity implements Serializable {
 
 	private static final long serialVersionUID = 1L;

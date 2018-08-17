@@ -12,6 +12,10 @@ public final class UserDto implements Serializable {
 	private String id;
 	private String email;
 	private String name;
+	private String mobile;
+	private String password;
+	private String confirmPassword;
+	private boolean isActive;
 
 	public String getName() {
 		return name;
@@ -20,10 +24,6 @@ public final class UserDto implements Serializable {
 	public void setName(String name) {
 		this.name = name;
 	}
-
-	private String mobile;
-	private String password;
-	private String confirmPassword;
 
 	public String getConfirmPassword() {
 		return confirmPassword;
@@ -40,8 +40,6 @@ public final class UserDto implements Serializable {
 	public void setActive(boolean isActive) {
 		this.isActive = isActive;
 	}
-
-	private boolean isActive;
 
 	public String getId() {
 		return id;
