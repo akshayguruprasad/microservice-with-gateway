@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.indream.noteservice.model.UserEntity;
 
-@FeignClient(name = "userservice")
+@FeignClient(name = "user")
 public interface UserCallHandler {
 	@RequestMapping(path = "/userapplication/user", method = RequestMethod.GET)
 	UserEntity findUserEntityById(@RequestHeader("user") String userId);

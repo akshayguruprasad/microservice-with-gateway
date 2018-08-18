@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.indream.configuration.I18NSpec;
 import com.indream.noteservice.model.NoteDto;
 import com.indream.noteservice.model.NoteEntity;
 import com.indream.noteservice.model.NoteResponse;
@@ -35,8 +35,8 @@ public class NoteController {
 	@Autowired
 	NoteService noteService;
 
-	@Autowired
-	I18NSpec i18N;
+@Autowired
+Environment environment;
 
 	/*
 	 * @purpose REQUEST MAPPING FOR THE CREATE NOTE
@@ -53,13 +53,13 @@ public class NoteController {
 		String noteId = null;
 		try {
 			String token = (String) request.getHeader("userId");
-
+System.out.println(token);
 			noteId = noteService.createNote(noteEntityDTO, token, request);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return new ResponseEntity<NoteResponse>(
-				new NoteResponse(i18N.getMessage("note.create.success") + " with id : " + noteId, 11), HttpStatus.OK);
+				new NoteResponse(environment.getProperty("note.create.success") + " with id : " + noteId, 11), HttpStatus.OK);
 	}
 
 	/*
@@ -76,7 +76,7 @@ public class NoteController {
 	public ResponseEntity<NoteResponse> updateNote(@RequestBody NoteDto noteEntityDTO, HttpServletRequest request) {
 		String token = (String) request.getHeader("userId");
 		noteService.updateNote(noteEntityDTO, token);
-		return new ResponseEntity<NoteResponse>(new NoteResponse(i18N.getMessage("note.update.success"), 11),
+		return new ResponseEntity<NoteResponse>(new NoteResponse(environment.getProperty("note.update.success"), 11),
 				HttpStatus.OK);
 
 	}
@@ -104,7 +104,7 @@ public class NoteController {
 			e.printStackTrace();
 
 		}
-		return new ResponseEntity<NoteResponse>(new NoteResponse(i18N.getMessage("note.delete.success"), 11),
+		return new ResponseEntity<NoteResponse>(new NoteResponse(environment.getProperty("note.delete.success"), 11),
 				HttpStatus.OK);
 	}
 
@@ -142,7 +142,7 @@ public class NoteController {
 	public ResponseEntity<String> pinNote(@PathVariable("noteId") String noteId, HttpServletRequest request) {
 		String token = (String) request.getHeader("userId");
 		noteService.pinNote(noteId, token);
-		return new ResponseEntity<String>(i18N.getMessage("note.pin.success"), HttpStatus.OK);
+		return new ResponseEntity<String>(environment.getProperty("note.pin.success"), HttpStatus.OK);
 	}
 
 	/*
@@ -159,7 +159,7 @@ public class NoteController {
 	public ResponseEntity<String> trashNote(@PathVariable("noteId") String noteId, HttpServletRequest request) {
 		String token = (String) request.getHeader("userId");
 		noteService.deleteNoteToTrash(noteId, token);
-		return new ResponseEntity<String>(i18N.getMessage("note.trash.success"), HttpStatus.OK);
+		return new ResponseEntity<String>(environment.getProperty("note.trash.success"), HttpStatus.OK);
 	}
 
 	/*
@@ -176,14 +176,14 @@ public class NoteController {
 	public ResponseEntity<String> archiveNote(@PathVariable("noteId") String noteId, HttpServletRequest request) {
 		String token = (String) request.getHeader("userId");
 		noteService.archiveNote(noteId, token);
-		return new ResponseEntity<String>(i18N.getMessage("note.archive.success"), HttpStatus.OK);
+		return new ResponseEntity<String>(environment.getProperty("note.archive.success"), HttpStatus.OK);
 	}
 
 	@RequestMapping(path = "/restorenote/{noteId}", method = RequestMethod.PUT)
 	public ResponseEntity<String> restoreNote(@PathVariable("noteId") String noteId, HttpServletRequest request) {
 		String token = (String) request.getHeader("userId");
 		noteService.restoreNote(noteId, token);
-		return new ResponseEntity<String>(i18N.getMessage("note.restore.success"), HttpStatus.OK);
+		return new ResponseEntity<String>(environment.getProperty("note.restore.success"), HttpStatus.OK);
 	}
 
 	@RequestMapping(path = "/remindernote", method = RequestMethod.PUT)
@@ -191,37 +191,39 @@ public class NoteController {
 		String token = (String) request.getHeader("userId");
 		System.out.println(noteDto);
 		noteService.reminderNote(noteDto, token);
-		return new ResponseEntity<String>(i18N.getMessage("note.reminder.success"), HttpStatus.OK);
+		return new ResponseEntity<String>(environment.getProperty("note.reminder.success"), HttpStatus.OK);
 	}
 
 	@RequestMapping(path = "/createlabel/{label}", method = RequestMethod.POST)
 	public ResponseEntity<String> createLabel(@PathVariable("label") String label, HttpServletRequest request) {
 		String token = (String) request.getHeader("userId");
-		System.out.println("Sression object token is " + token);
-		noteService.createLabel(label, token);
-		return new ResponseEntity<String>(i18N.getMessage("label.create.success"), HttpStatus.OK);
+		System.out.println("Session object token is " + token);
+		String id = noteService.createLabel(label, token);
+		return new ResponseEntity<String>(environment.getProperty("label.create.success") + id, HttpStatus.OK);
 	}
 
 	@RequestMapping(path = "/editlabel/{label}/{labelId}", method = RequestMethod.PUT)
-	public ResponseEntity<String> editLabel(@PathVariable("label") String label, HttpServletRequest request,@PathVariable("labelId") String labelId) {
+	public ResponseEntity<String> editLabel(@PathVariable("label") String label, HttpServletRequest request,
+			@PathVariable("labelId") String labelId) {
 		String token = (String) request.getHeader("userId");
 		noteService.editLabelName(token, label, labelId);
-		return new ResponseEntity<String>(i18N.getMessage("label.update.success"), HttpStatus.OK);
+		return new ResponseEntity<String>(environment.getProperty("label.update.success"), HttpStatus.OK);
 	}
 
 	@RequestMapping(path = "/deletelabel/{label}", method = RequestMethod.DELETE)
 	public ResponseEntity<String> deleteLabel(@PathVariable("label") String label, HttpServletRequest request) {
 		String token = (String) request.getHeader("userId");
 		noteService.deleteLabel(label, token);
-		return new ResponseEntity<String>(i18N.getMessage("label.delete.success"), HttpStatus.OK);
+		return new ResponseEntity<String>(environment.getProperty("label.delete.success"), HttpStatus.OK);
 	}
 
 	@RequestMapping(path = "/labelnote/{label}/{noteId}", method = RequestMethod.PUT)
-	public ResponseEntity<String> labelNote(@PathVariable("label") String label,@PathVariable("noteId") String noteId, HttpServletRequest request) {
+	public ResponseEntity<String> labelNote(@PathVariable("label") String label, @PathVariable("noteId") String noteId,
+			HttpServletRequest request) {
 		String token = (String) request.getHeader("userId");
-		System.out.println(noteId+""+label);
+		System.out.println(noteId + "" + label);
 		noteService.setLabelNote(noteId, token, label);
-		return new ResponseEntity<String>(i18N.getMessage("note.label.success"), HttpStatus.OK);
+		return new ResponseEntity<String>(environment.getProperty("note.label.success"), HttpStatus.OK);
 	}
 
 	@RequestMapping(path = "/getTrashnote", method = RequestMethod.GET)
@@ -249,21 +251,21 @@ public class NoteController {
 	public ResponseEntity<String> unPinNote(String noteId, HttpServletRequest request) {
 		String token = (String) request.getHeader("userId");
 		noteService.unPinNote(noteId, token);
-		return new ResponseEntity<String>(i18N.getMessage("note.unpin.success"), HttpStatus.OK);
+		return new ResponseEntity<String>(environment.getProperty("note.unpin.success"), HttpStatus.OK);
 	}
 
 	@RequestMapping(path = "/unarchivenote", method = RequestMethod.PUT)
 	public ResponseEntity<String> unArchiveNote(String noteId, HttpServletRequest request) {
 		String token = (String) request.getHeader("userId");
 		noteService.unArchiveNote(noteId, token);
-		return new ResponseEntity<String>(i18N.getMessage("note.unarchive.success"), HttpStatus.OK);
+		return new ResponseEntity<String>(environment.getProperty("note.unarchive.success"), HttpStatus.OK);
 	}
 
 	@RequestMapping(path = "/addUrl", method = RequestMethod.PUT)
 	public ResponseEntity<String> updateUrlNote(String noteId, String url, HttpServletRequest request) {
 		String token = (String) request.getHeader("userId");
 		noteService.urlNote(url, noteId, token);
-		return new ResponseEntity<String>(i18N.getMessage("note.url.add.success"), HttpStatus.OK);
+		return new ResponseEntity<String>(environment.getProperty("note.url.add.success"), HttpStatus.OK);
 	}
 
 	@GetMapping("/demo")

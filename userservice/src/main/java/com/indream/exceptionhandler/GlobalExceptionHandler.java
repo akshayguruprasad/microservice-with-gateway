@@ -28,6 +28,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 	}
 
+	@ExceptionHandler(value = GenericException.class)
+	public ResponseEntity<UserResponse> getException(GenericException e) {
+
+		UserResponse response = new UserResponse(e.getMessage(), 1001);
+		return new ResponseEntity<UserResponse>(response, HttpStatus.BAD_REQUEST);
+
+	}
+
 	@ExceptionHandler(value = RuntimeException.class)
 	public ResponseEntity<UserResponse> getException(Exception e) {
 
@@ -36,11 +44,4 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 	}
 
-	@ExceptionHandler(value = GenericException.class)
-	public ResponseEntity<UserResponse> getException(GenericException e) {
-
-		UserResponse response = new UserResponse(e.getMessage(), 1001);
-		return new ResponseEntity<UserResponse>(response, HttpStatus.BAD_REQUEST);
-
-	}
 }

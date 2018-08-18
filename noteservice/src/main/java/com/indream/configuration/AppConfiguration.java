@@ -21,9 +21,6 @@ import com.indream.util.TokenManagerImpl;
  *
  */
 @Configuration
-@PropertySource(value = { "classpath:application.properties", "classpath:ErrorProperties.properties",
-		"classpath:LiteralProperties.properties", "classpath:mail.properties", "classpath:credentials.properties" })
-
 public class AppConfiguration {
 
 	/*

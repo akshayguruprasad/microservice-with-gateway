@@ -69,9 +69,6 @@ public class NoteServiceImpl implements NoteService {
 	 * @since Jul 24, 2018
 	 *
 	 */
-	
-	
-
 
 	@Override
 	public String createNote(NoteDto noteEntityDTO, String token, HttpServletRequest request) {
@@ -336,6 +333,7 @@ public class NoteServiceImpl implements NoteService {
 			noteEntities = (List<NoteEntity>) dao.searchElasticNote(userId);
 			noteEntities.forEach(System.out::println);
 		} catch (IOException e) {
+			System.out.println("Failes to search data from the elastic search repos");
 			throw new NoteException(env.getProperty("note.found.not.error.message"));
 		}
 		noteEntities.forEach(System.out::println);
@@ -441,7 +439,7 @@ public class NoteServiceImpl implements NoteService {
 			if (id == null) {
 				throw new LabelException(env.getProperty("label.save.error.message"));
 			}
-
+			System.out.println("The label id is " + id);
 			return id;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -465,19 +463,20 @@ public class NoteServiceImpl implements NoteService {
 	 */
 	@Override
 	public void setLabelNote(String noteId, String token, String labelId) {
-
 		String userId = this.getUserId(token);
 		this.validateUser(userId);
 		this.validNote(noteId, userId);
-		NoteEntity noteEntity = null;
+		NoteEntity noteEntity, preservedNote = null;
 		try {
 			noteEntity = dao.getElasticNoteEntity("id", noteId);
+			preservedNote = noteEntity;
 			LabelEntity label = this.getLabelEntity(labelId);
 			this.validLabel(userId, label);
 			noteEntity.getLabel().add(labelId);
 			noteEntity = noteMongoRepository.save(noteEntity);
 			dao.updateElasticNote(noteEntity);
 		} catch (IOException e) {
+			noteMongoRepository.save(preservedNote);
 			throw new NoteException(env.getProperty("label.note.set.error.message"));
 
 		}
@@ -797,17 +796,14 @@ public class NoteServiceImpl implements NoteService {
 	@PostConstruct
 	public void settings() {
 
-	/*	IndexRequest indexRequest1 = new IndexRequest("labelindex", "label");
-		IndexRequest indexRequest2 = new IndexRequest("noteindex", "notes");
-
-		try {
-			client.index(indexRequest1);
-			client.index(indexRequest2);
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	*/
+		/*
+		 * IndexRequest indexRequest1 = new IndexRequest("labelindex", "label");
+		 * IndexRequest indexRequest2 = new IndexRequest("noteindex", "notes");
+		 * 
+		 * try { client.index(indexRequest1); client.index(indexRequest2);
+		 * 
+		 * } catch (IOException e) { // TODO Auto-generated catch block
+		 * e.printStackTrace(); }
+		 */
 	}
 }

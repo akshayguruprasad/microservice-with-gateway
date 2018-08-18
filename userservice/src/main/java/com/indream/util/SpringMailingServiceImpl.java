@@ -32,13 +32,11 @@ public class SpringMailingServiceImpl implements MessageService {
      * @since Jul 24, 2018
      *
      */
-	@Async(value = "threadpoolexec")
 	@Override
 	public void sendMessage(String userEmail, String subject, String message)
 			throws IllegalStateException, MessagingException {
-
-		springMail.setPassword(env.getProperty("mail.password"));//SET THE USER PASSWORD
-		springMail.setUsername(env.getProperty("mail.username"));//SET THE USER NAME
+		springMail.setPassword(env.getProperty("admin.password"));//SET THE USER PASSWORD
+		springMail.setUsername(env.getProperty("admin.email"));//SET THE USER NAME
 		SimpleMailMessage messageSimple = new SimpleMailMessage();//CREATE A NEW MESSAGE
 		messageSimple.setText(message);//SET THE TEXT 
 		messageSimple.setTo(userEmail.trim());//RECIVER

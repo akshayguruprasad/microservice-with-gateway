@@ -53,18 +53,5 @@ public class SwaggerConfiguration {
 	return new ApiKey("authorization", "authorization", "header");
     }
 
-    /*
-     * private SecurityContext securityContext() { return
-     * SecurityContext.builder().securityReferences(defaultAuth()).forPaths(
-     * PathSelectors.any()).build(); }
-     */
-
-    /*
-     * private List<SecurityReference> defaultAuth() { AuthorizationScope
-     * authorizationScope = new AuthorizationScope("global", "accessNothing");
-     * AuthorizationScope[] authorizationScopes = new AuthorizationScope[1];
-     * authorizationScopes[0] = authorizationScope; return Lists.newArrayList(new
-     * SecurityReference("authorization", authorizationScopes)); }
-     */
-
+  
 }

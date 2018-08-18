@@ -59,10 +59,7 @@ public class UserServiceImpl implements UserService {
 	public void registerUser(UserDto user) {
 		try {
 			LOG.info("Enter [UserServiceImpl][registerUser]");
-			UserEntity userEntity = null;
-			Optional<UserEntity> opt = repository.getByEmail(user.getEmail());
-			System.out.println(opt);
-			userEntity = opt.orElse(null);
+			 UserEntity userEntity= repository.getByEmail(user.getEmail()).orElse(null);
 			PreConditions.checkNotNull(userEntity, env.getProperty("user.already.exists.error.message"),
 					UserException.class);
 			user.setPassword(passwordEncoder.encode(user.getPassword()));

@@ -39,12 +39,8 @@ public class TokenManagerImpl implements TokenManager {
 	LOG.info("method param : " + requester);
 	String token = null;
 	Map<String, Object> claims = null;
-//	GregorianCalendar calendar = null;
 	Date date = null;
 	date = new Date();
-//	calendar = new GregorianCalendar();
-//	calendar.setTime(date);
-//	calendar.add(Calendar.MINUTE, 10);
 	claims = new HashMap<String, Object>();
 	claims.put("name", requester.getName()); // USER FIRST NAME
 	claims.put("id", String.valueOf(requester.getId()));// USER UNIQUE ID
