@@ -247,15 +247,15 @@ System.out.println(token);
 		return new ResponseEntity<String>(entities.toString(), HttpStatus.OK);
 	}
 
-	@RequestMapping(path = "/unpinnote", method = RequestMethod.PUT)
-	public ResponseEntity<String> unPinNote(String noteId, HttpServletRequest request) {
+	@RequestMapping(path = "/unpinnote/{noteId}", method = RequestMethod.PUT)
+	public ResponseEntity<String> unPinNote(@PathVariable String noteId, HttpServletRequest request) {
 		String token = (String) request.getHeader("userId");
 		noteService.unPinNote(noteId, token);
 		return new ResponseEntity<String>(environment.getProperty("note.unpin.success"), HttpStatus.OK);
 	}
 
-	@RequestMapping(path = "/unarchivenote", method = RequestMethod.PUT)
-	public ResponseEntity<String> unArchiveNote(String noteId, HttpServletRequest request) {
+	@RequestMapping(path = "/unarchivenote/{noteId}", method = RequestMethod.PUT)
+	public ResponseEntity<String> unArchiveNote(@PathVariable String noteId, HttpServletRequest request) {
 		String token = (String) request.getHeader("userId");
 		noteService.unArchiveNote(noteId, token);
 		return new ResponseEntity<String>(environment.getProperty("note.unarchive.success"), HttpStatus.OK);

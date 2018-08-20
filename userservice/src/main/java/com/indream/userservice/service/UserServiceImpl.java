@@ -74,6 +74,7 @@ public class UserServiceImpl implements UserService {
 			mail.setMessage(message);
 			mail.setTo(user.getEmail());
 			String mailString = Utility.covertToJSONString(mail);
+			System.out.println("Mail message "+mailString);
 			template.convertAndSend(RabbitMqConfig.TOPICEXCHANGENAME, RabbitMqConfig.ROUTING_KEY, mailString);
 
 		} catch (Exception e) {

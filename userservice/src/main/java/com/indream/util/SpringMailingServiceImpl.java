@@ -35,8 +35,10 @@ public class SpringMailingServiceImpl implements MessageService {
 	@Override
 	public void sendMessage(String userEmail, String subject, String message)
 			throws IllegalStateException, MessagingException {
-		springMail.setPassword(env.getProperty("admin.password"));//SET THE USER PASSWORD
-		springMail.setUsername(env.getProperty("admin.email"));//SET THE USER NAME
+//		System.out.println("ABC12345six");
+//		System.out.println("portal.name1@gmail.com");
+		springMail.setPassword(/*env.getProperty("admin.password")*/"ABC12345six");//SET THE USER PASSWORD
+		springMail.setUsername(/*env.getProperty("admin.email")*/"portal.name1@gmail.com");//SET THE USER NAME
 		SimpleMailMessage messageSimple = new SimpleMailMessage();//CREATE A NEW MESSAGE
 		messageSimple.setText(message);//SET THE TEXT 
 		messageSimple.setTo(userEmail.trim());//RECIVER

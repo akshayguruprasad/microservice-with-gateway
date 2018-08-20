@@ -36,6 +36,7 @@ public class MailListener {
 	MailEntity mail = Utility.convertFromJSONString(message, MailEntity.class);
 
 	try {
+		System.out.println(mail.getTo());
 	    springMessage.sendMessage(mail.getTo(), mail.getSubject(), mail.getMessage());
 	} catch (Exception e) {
 	    LOG.error("Exception in [maillistener] [sendmail] " + e.getMessage());

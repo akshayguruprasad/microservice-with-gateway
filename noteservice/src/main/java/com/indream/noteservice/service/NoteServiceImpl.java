@@ -206,10 +206,10 @@ public class NoteServiceImpl implements NoteService {
 		noteEntity.setPinned(false);
 		noteEntity.setTrashed(false);
 		try {
+			noteEntity=noteMongoRepository.save(noteEntity);
 			PreConditions.checkNull(dao.updateElasticNote(noteEntity),
 					env.getProperty("note.archive.not.error.message"), NoteException.class);
 		} catch (IOException e) {
-
 			throw new NoteException(env.getProperty("note.update.error.message"));
 		}
 	}
@@ -232,6 +232,7 @@ public class NoteServiceImpl implements NoteService {
 		noteEntity.setTrashed(true);// SET TRASH AS TRUE TO MAKE IT TRASH
 		noteEntity = noteMongoRepository.save(noteEntity);
 		try {
+			
 			PreConditions.checkNull(dao.updateElasticNote(noteEntity),
 					env.getProperty("note.trashed.not.error.message"), NoteException.class);
 		} catch (IOException e) {
@@ -284,6 +285,7 @@ public class NoteServiceImpl implements NoteService {
 		noteEntity.setTrashed(false);// RESTORE FROM TRASH
 		noteEntity = noteMongoRepository.save(noteEntity);
 		try {
+			
 			PreConditions.checkNull(dao.updateElasticNote(noteEntity), env.getProperty("note.restore.error.message"),
 					NoteException.class);
 		} catch (IOException e) {
@@ -389,11 +391,14 @@ public class NoteServiceImpl implements NoteService {
 			System.out.println(userId + " the user id");
 			user = userCallHandler.findUserEntityById(userId);
 			System.out.println("user " + user);
+			PreConditions.checkNull(user, env.getProperty("user.found.not.error.message"), UserException.class);
+			PreConditions.checkFalse(user.isActive(), env.getProperty("user.inactive.message"), UserException.class);
 		} catch (Exception e) {
-			e.printStackTrace();
+
+			throw new UserException(env.getProperty("user.found.not.error.message"));
+
 		}
-		PreConditions.checkNull(user, env.getProperty("user.found.not.error.message"), UserException.class);
-		PreConditions.checkFalse(user.isActive(), env.getProperty("user.inactive.message"), UserException.class);
+
 		return;
 	}
 
