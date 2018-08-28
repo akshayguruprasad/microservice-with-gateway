@@ -31,7 +31,7 @@ public class RedisOperation implements InitializingBean {
 
 	public Map<?, ?> checkToken(String userLoginToken) {
 
-		String token =userLoginToken;
+		String token = RequestContext.getCurrentContext().getZuulRequestHeaders().get("authorization");
 		Token valueToken = null;
 		if (!boundHashOperations.hasKey(token)) {// NEW ENTRY FOUND
 			Claims claims = manager.validateToken(token);// PARSE THE TOKEN

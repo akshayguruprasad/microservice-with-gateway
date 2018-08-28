@@ -7,18 +7,15 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.indream.exceptionhandler.LabelException;
 import com.indream.exceptionhandler.NoteException;
@@ -28,7 +25,6 @@ import com.indream.noteservice.dao.NoteDao;
 import com.indream.noteservice.model.LabelEntity;
 import com.indream.noteservice.model.NoteDto;
 import com.indream.noteservice.model.NoteEntity;
-import com.indream.noteservice.model.ReminderDto;
 import com.indream.noteservice.model.UrlEntity;
 import com.indream.noteservice.model.UserEntity;
 import com.indream.noteservice.repository.LabelMongoRepository;
@@ -43,21 +39,17 @@ import com.indream.util.Utility;
  *
  */
 @SuppressWarnings("unchecked")
-@Service
 public class NoteServiceImpl implements NoteService {
 	@Autowired
 	private NoteDao dao;
 	@Autowired
 	private Environment env;
 	@Autowired
-	UserCallHandler userCallHandler;
+	private UserCallHandler userCallHandler;
 	@Autowired
 	private NoteMongoRepository noteMongoRepository;
 	@Autowired
 	private LabelMongoRepository labelMongoRepository;
-
-	@Autowired
-	private RestHighLevelClient client;
 
 	/*
 	 * @purpose CREATE NOTE METHOD
@@ -69,7 +61,6 @@ public class NoteServiceImpl implements NoteService {
 	 * @since Jul 24, 2018
 	 *
 	 */
-
 	@Override
 	public String createNote(NoteDto noteEntityDTO, String token, HttpServletRequest request) {
 		NoteEntity noteEntity = Utility.convert(noteEntityDTO, NoteEntity.class);// MODEL MAPPING FOR DTO TO ENTITY
@@ -79,7 +70,6 @@ public class NoteServiceImpl implements NoteService {
 		validateUser(userId);// VALIDATE THE USER
 		noteEntity.setUserId(userId);// IF TRUE THEN SET USERID
 		noteEntity = noteMongoRepository.save(noteEntity);
-		System.out.println(noteEntity);
 		PreConditions.checkNull(noteEntity.getId(), env.getProperty("note.save.error.message"), NoteException.class);
 		try {
 			PreConditions.checkNull(dao.saveElasticNote(noteEntity), env.getProperty("note.save.error.message"),
@@ -130,40 +120,16 @@ public class NoteServiceImpl implements NoteService {
 	@Override
 	public void deleteNote(String noteId, String token) {
 		String userId = this.getUserId(token);
+		this.validNote(noteId, userId);
 		try {
-			this.validNote(noteId, userId);
-
-			System.out.println("Value is " + noteId);
-			System.out.println("Token vlaue is " + token);
-			NoteEntity value = null;
-			try {
-				value = dao.getElasticNoteEntity("userId", userId);
-				System.out.println(value);
-			} catch (Exception e) {
-
-				e.printStackTrace();
-
-			}
-			if (!value.isTrashed()) {
-				throw new NoteException(env.getProperty("note.trashed.not.error.message"));
-			}
-			noteMongoRepository.deleteById(noteId);
-
-			/*
-			 * List<NoteEntity> noteEntities = (List<NoteEntity>)
-			 * dao.searchElasticNote(userId);
-			 * 
-			 * NoteEntity noteEntity = noteEntities.stream().filter(p ->
-			 * p.getId().equals(noteId)).findFirst() .orElse(null);
-			 * PreConditions.checkFalse(noteEntity.isTrashed(),
-			 * env.getProperty("note.trashed.not.error.message"), NoteException.class);
-			 */
-			dao.deleteElasticNote(noteId);
-
+			noteMongoRepository.deleteById(userId);
+			List<NoteEntity> noteEntities = (List<NoteEntity>) dao.searchElasticNote(userId);
+			NoteEntity noteEntity = noteEntities.stream().filter(p -> p.getId().equals(noteId)).findFirst()
+					.orElse(null);
+			PreConditions.checkFalse(noteEntity.isTrashed(), env.getProperty("note.trashed.not.error.message"),
+					NoteException.class);
+			dao.deleteElasticNote(noteEntity.getId());
 		} catch (Exception e) {
-
-			e.printStackTrace();
-
 			throw new NoteException(env.getProperty("note.delete.error.message"));
 		}
 	}
@@ -206,10 +172,10 @@ public class NoteServiceImpl implements NoteService {
 		noteEntity.setPinned(false);
 		noteEntity.setTrashed(false);
 		try {
-			noteEntity=noteMongoRepository.save(noteEntity);
 			PreConditions.checkNull(dao.updateElasticNote(noteEntity),
 					env.getProperty("note.archive.not.error.message"), NoteException.class);
 		} catch (IOException e) {
+
 			throw new NoteException(env.getProperty("note.update.error.message"));
 		}
 	}
@@ -232,7 +198,6 @@ public class NoteServiceImpl implements NoteService {
 		noteEntity.setTrashed(true);// SET TRASH AS TRUE TO MAKE IT TRASH
 		noteEntity = noteMongoRepository.save(noteEntity);
 		try {
-			
 			PreConditions.checkNull(dao.updateElasticNote(noteEntity),
 					env.getProperty("note.trashed.not.error.message"), NoteException.class);
 		} catch (IOException e) {
@@ -285,7 +250,6 @@ public class NoteServiceImpl implements NoteService {
 		noteEntity.setTrashed(false);// RESTORE FROM TRASH
 		noteEntity = noteMongoRepository.save(noteEntity);
 		try {
-			
 			PreConditions.checkNull(dao.updateElasticNote(noteEntity), env.getProperty("note.restore.error.message"),
 					NoteException.class);
 		} catch (IOException e) {
@@ -305,7 +269,7 @@ public class NoteServiceImpl implements NoteService {
 	 *
 	 */
 	@Override
-	public void reminderNote(ReminderDto noteDto, String token) {
+	public void reminderNote(NoteDto noteDto, String token) {
 		final NoteEntity noteEntity = getValidNoteEntity(noteDto.getId(), token);// CHECK FOR THE VALID NOTE
 		class TimerImpl extends TimerTask {
 			@Override
@@ -315,7 +279,7 @@ public class NoteServiceImpl implements NoteService {
 		}
 		TimerImpl timerImpl = new TimerImpl();
 		Timer timer = new Timer(true);
-		timer.schedule(timerImpl, noteDto.getDate());
+//		timer.schedule(timerImpl, noteDto.getReminderDate());
 	}
 
 	/*
@@ -333,18 +297,11 @@ public class NoteServiceImpl implements NoteService {
 		List<NoteEntity> noteEntities;
 		try {
 			noteEntities = (List<NoteEntity>) dao.searchElasticNote(userId);
-			noteEntities.forEach(System.out::println);
 		} catch (IOException e) {
-			System.out.println("Failes to search data from the elastic search repos");
 			throw new NoteException(env.getProperty("note.found.not.error.message"));
 		}
-		noteEntities.forEach(System.out::println);
-		List<String> count1 = noteEntities.stream().map(p -> p.getId()).filter(p -> p.equals(noteId))
-				.collect(Collectors.toList());
+		long count = noteEntities.stream().filter(p -> p.getId().equals(noteId.toString())).count();
 		// CHECK FOR ONLY ONE EXISTANCE FOR THAT PARTICULAR NOTE ID
-		System.out.println(count1);
-		int count = count1.size();
-		System.out.println(count);
 		if (count != 1) {
 			throw new NoteException(env.getProperty("note.integirity.error.message"));
 		}
@@ -386,20 +343,8 @@ public class NoteServiceImpl implements NoteService {
 	 *
 	 */
 	private void validateUser(String userId) throws UserException {// CONTACT THE USER MODULE TO GET THE USER CONTENT
-		UserEntity user = null;
-		try {
-			System.out.println(userId + " the user id");
-			user = userCallHandler.findUserEntityById(userId);
-			System.out.println("user " + user);
-			PreConditions.checkNull(user, env.getProperty("user.found.not.error.message"), UserException.class);
-			PreConditions.checkFalse(user.isActive(), env.getProperty("user.inactive.message"), UserException.class);
-		} catch (Exception e) {
 
-			throw new UserException(env.getProperty("user.found.not.error.message"));
-
-		}
-
-		return;
+		this.findUserEntityById(userId);
 	}
 
 	/*
@@ -429,6 +374,7 @@ public class NoteServiceImpl implements NoteService {
 	@Override
 	public String createLabel(String label, String token) {
 		try {
+
 			String id = null;
 			String userId = this.getUserId(token);
 			checkLabelLength(label, env.getProperty("label.length.error.message"));
@@ -444,7 +390,7 @@ public class NoteServiceImpl implements NoteService {
 			if (id == null) {
 				throw new LabelException(env.getProperty("label.save.error.message"));
 			}
-			System.out.println("The label id is " + id);
+
 			return id;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -468,20 +414,20 @@ public class NoteServiceImpl implements NoteService {
 	 */
 	@Override
 	public void setLabelNote(String noteId, String token, String labelId) {
+
 		String userId = this.getUserId(token);
 		this.validateUser(userId);
 		this.validNote(noteId, userId);
-		NoteEntity noteEntity, preservedNote = null;
+		NoteEntity noteEntity = null;
+
 		try {
 			noteEntity = dao.getElasticNoteEntity("id", noteId);
-			preservedNote = noteEntity;
 			LabelEntity label = this.getLabelEntity(labelId);
 			this.validLabel(userId, label);
 			noteEntity.getLabel().add(labelId);
 			noteEntity = noteMongoRepository.save(noteEntity);
 			dao.updateElasticNote(noteEntity);
 		} catch (IOException e) {
-			noteMongoRepository.save(preservedNote);
 			throw new NoteException(env.getProperty("label.note.set.error.message"));
 
 		}
@@ -752,7 +698,7 @@ public class NoteServiceImpl implements NoteService {
 	 * @purpose
 	 *
 	 *
-	 * @author akshayvalidateUser
+	 * @author akshay
 	 * 
 	 * @com.indream.fundoo.noteservice.service
 	 * 
@@ -770,6 +716,7 @@ public class NoteServiceImpl implements NoteService {
 			urlEntity.setUrl(url);
 			urlEntity.setImage(getImage(document));
 			urlEntity.setDetail(document.select("meta[name=description]").get(0).attr("content"));
+			System.out.println(urlEntity);
 		} catch (IOException e) {
 			throw new NoteException(env.getProperty("note.scaping.error.message"));
 		}
@@ -798,17 +745,18 @@ public class NoteServiceImpl implements NoteService {
 
 	}
 
-	@PostConstruct
-	public void settings() {
+	@Override
+	public UserEntity findUserEntityById(String userId) {
 
-		/*
-		 * IndexRequest indexRequest1 = new IndexRequest("labelindex", "label");
-		 * IndexRequest indexRequest2 = new IndexRequest("noteindex", "notes");
-		 * 
-		 * try { client.index(indexRequest1); client.index(indexRequest2);
-		 * 
-		 * } catch (IOException e) { // TODO Auto-generated catch block
-		 * e.printStackTrace(); }
-		 */
+		UserEntity user = userCallHandler.findUserEntityById(userId);
+		System.out.println("the exchange value is ");
+		System.out.println(user);
+
+		PreConditions.checkNull(user, env.getProperty("user.found.not.error.message"), UserException.class);
+		PreConditions.checkFalse(user.isActive(), env.getProperty("user.inactive.message"), UserException.class);
+
+		return user;
+
 	}
+
 }

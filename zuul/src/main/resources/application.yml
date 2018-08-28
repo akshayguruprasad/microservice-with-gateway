@@ -4,12 +4,10 @@ zuul:
   routes:
     noteapplication:
       path: /noteservice/**
-      serviceId: note
+      serviceId: noteservice
     userapplication:
       path: /userservice/**
-      serviceId: user
-  host:
-    socket-timeout-millis: 60000
+      serviceId: userservice
 eureka:
   client:
     serviceUrl:
@@ -17,15 +15,3 @@ eureka:
 spring:
   application:
     name: zuul
-    
-#ribbon:
-#  ConnectTimeout: 60000
-#  ReadTimeout: 600000
-#
-#  
-#hystrix:
-#    command:
-#        default:
-#            execution:
-#                timeout:
-#                    enabled: false

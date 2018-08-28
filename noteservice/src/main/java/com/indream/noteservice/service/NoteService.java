@@ -4,9 +4,9 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.indream.feingclient.UserCallHandler;
 import com.indream.noteservice.model.NoteDto;
 import com.indream.noteservice.model.NoteEntity;
-import com.indream.noteservice.model.ReminderDto;
 
 /**
  * NOTESERVICE INTERFACE
@@ -14,7 +14,7 @@ import com.indream.noteservice.model.ReminderDto;
  * @author Akshay
  *
  */
-public interface NoteService  {
+public interface NoteService  extends UserCallHandler{
 	String createNote(NoteDto note, String token, HttpServletRequest request);
 
 	void updateNote(NoteDto noteDto, String token);
@@ -31,7 +31,7 @@ public interface NoteService  {
 
 	void restoreNote(String noteId, String token);
 
-	void reminderNote(ReminderDto noteDto, String token);
+	void reminderNote(NoteDto noteDto, String token);
 
 	String createLabel(String label, String token);
 

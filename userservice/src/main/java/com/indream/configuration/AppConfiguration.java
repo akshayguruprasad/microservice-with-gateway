@@ -3,6 +3,8 @@ package com.indream.configuration;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -20,7 +22,8 @@ import com.indream.util.TokenManagerImpl;
  *
  */
 @Configuration
-
+@PropertySource(value = { "classpath:application.properties", "classpath:ErrorProperties.properties",
+		"classpath:LiteralProperties.properties", "classpath:mail.properties", "classpath:credentials.properties" })
 public class AppConfiguration {
 
 	/*
@@ -121,5 +124,44 @@ public class AppConfiguration {
 
 	}
 
+	/*
+	 * 
+	 * @purpose APPLICATION SUPPORTS THE INTERCEPTORS AND ADDING TO REGISTERY
+	 *
+	 * @author akshay
+	 * 
+	 * @com.indream.fundoo.configuration
+	 * 
+	 * @since Jul 24, 2018
+	 *
+	 * 
+	 * @Override public void addInterceptors(InterceptorRegistry
+	 * interceptorRegistry) {
+	 * interceptorRegistry.addInterceptor(getTokenInterceptor()).addPathPatterns(
+	 * "/noteapplication/**")
+	 * .addPathPatterns("/userapplication/update/password").addPathPatterns(
+	 * "/userapplication/update/password")
+	 * .addPathPatterns("/userapplication/delete/user").addPathPatterns(
+	 * "/userapplication/activate/account");
+	 * 
+	 * }
+	 * 
+	 * 
+	 * @purpose CREATION OF INTERCEPTOR BEAN
+	 *
+	 * @author akshay
+	 * 
+	 * @com.indream.fundoo.configuration
+	 * 
+	 * @since Jul 24, 2018
+	 *
+	 * 
+	 * @Bean public TokenValidatorInterceptor getTokenInterceptor() { return new
+	 * TokenValidatorInterceptor();// NEW OPERATOR }
+	 */
+	@Bean
+	public PropertySourcesPlaceholderConfigurer getPropertySource() {
+		return new PropertySourcesPlaceholderConfigurer();
+	}
 
 }// AppCOnfiguration class ends

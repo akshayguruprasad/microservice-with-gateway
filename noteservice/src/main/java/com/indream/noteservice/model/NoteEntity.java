@@ -1,24 +1,23 @@
 package com.indream.noteservice.model;
 
 import java.io.Serializable;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.hibernate.validator.constraints.NotBlank;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import io.swagger.annotations.ApiModelProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true, value = { "creadtedOn", "lastModified" })
-@Document(collection = "notes")
 public class NoteEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
-	@Id
+
 	private String id;
+
+	@NotBlank
 	private String title;
 	private String contents;
 	@ApiModelProperty(hidden = true)

@@ -21,8 +21,7 @@ public class ElasticConfig {
 	@Bean
 	public RestHighLevelClient getHighClient() {
 		RestHighLevelClient client = new RestHighLevelClient(
-				RestClient.builder(new HttpHost("127.0.0.1", 9200, "http")));
-		
+				RestClient.builder(new HttpHost("localhost", 9200, "http")));
 		return client;
 	}
 

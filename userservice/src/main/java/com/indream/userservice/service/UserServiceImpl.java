@@ -26,6 +26,7 @@ import com.indream.util.Utility;
  * @author Akshay
  *
  */
+//@PropertySource(value="")
 public class UserServiceImpl implements UserService {
 	private final Logger LOG = Logger.getLogger(UserServiceImpl.class);
 
@@ -44,7 +45,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private AmqpTemplate template;// AMQP TEMPLATE
+	
 
+	
 	/*
 	 * @purpose REGISTER THE USER INTO THE SYSTEM
 	 *
@@ -57,31 +60,26 @@ public class UserServiceImpl implements UserService {
 	 */
 	@Override
 	public void registerUser(UserDto user) {
-		try {
-			LOG.info("Enter [UserServiceImpl][registerUser]");
-			 UserEntity userEntity= repository.getByEmail(user.getEmail()).orElse(null);
-			PreConditions.checkNotNull(userEntity, env.getProperty("user.already.exists.error.message"),
-					UserException.class);
-			user.setPassword(passwordEncoder.encode(user.getPassword()));
-			user.setActive(false);// SAVE THE USER IN THE BASE
-			userEntity = Utility.convert(user, UserEntity.class);
-			userEntity = repository.save(userEntity);
-			String userIdToken = manager.generateToken(userEntity); // GENERATE AND BIND THE TOKEN TO URL
-			String message = env.getProperty("user.activation.link.prefix") + userIdToken
-					+ env.getProperty("user.activation.link.suffix");
-			MailEntity mail = new MailEntity();
-			mail.setSubject(env.getProperty("user.activation.email.subject"));
-			mail.setMessage(message);
-			mail.setTo(user.getEmail());
-			String mailString = Utility.covertToJSONString(mail);
-			System.out.println("Mail message "+mailString);
-			template.convertAndSend(RabbitMqConfig.TOPICEXCHANGENAME, RabbitMqConfig.ROUTING_KEY, mailString);
+		LOG.info("Enter [UserServiceImpl][registerUser]");
+		UserEntity userEntity = null;
+		userEntity = repository.getByEmail(user.getEmail()).get();
+		PreConditions.checkNotNull(userEntity, env.getProperty("user.already.exists.error.message"),
+				UserException.class);
+		user.setPassword(passwordEncoder.encode(user.getPassword()));
+		user.setActive(false);// SAVE THE USER IN THE BASE
+		userEntity = Utility.convert(user, UserEntity.class);
+		userEntity = repository.save(userEntity);
+//		userElasticRepository.save(userEntity);
+		String userIdToken = manager.generateToken(userEntity); // GENERATE AND BIND THE TOKEN TO URL
+		String message = env.getProperty("user.activation.link.prefix") + userIdToken
+				+ env.getProperty("user.activation.link.suffix");
+		MailEntity mail = new MailEntity();
+		mail.setSubject(env.getProperty("user.activation.email.subject"));
+		mail.setMessage(message);
+		mail.setTo(user.getEmail());
+		String mailString = Utility.covertToJSONString(mail);
+		template.convertAndSend(RabbitMqConfig.TOPICEXCHANGENAME, RabbitMqConfig.ROUTING_KEY, mailString);
 
-		} catch (Exception e) {
-
-			e.printStackTrace();
-
-		}
 	}
 
 	/*
@@ -100,6 +98,7 @@ public class UserServiceImpl implements UserService {
 		UserEntity user = repository.findById(userIdToken).get();// GET THE USER VALUE
 		user.setActive(true);// UPDATE THE USER VALUE TO TRUEd
 		repository.save(user);// SAVE THE USER VALUE
+//		userElasticRepository.save(user);
 		LOG.info("Exit [UserServiceImpl][activateUser]");
 	}
 
@@ -126,7 +125,7 @@ public class UserServiceImpl implements UserService {
 			throw new UserException(env.getProperty("user.password.mismatch.error.message"));
 		}
 		userIdToken = manager.generateToken(userEntity);// IF VALID LOGIN THEN PROVIDE THE USER WITH APPROPRIATE TOKEN
-		System.out.println(userIdToken);
+System.out.println(userIdToken);
 		return userIdToken;
 	}
 
@@ -150,6 +149,7 @@ public class UserServiceImpl implements UserService {
 		newPassword = passwordEncoder.encode(RandomStringUtils.randomAlphanumeric(10));// GENERATE AN ALPHANUMBER
 		user.setPassword(newPassword);// SET THE NEW PASSWORD
 		user = repository.save(user);// UPDATE THE USER
+//		userElasticRepository.save(user);
 		String userIdToken = manager.generateToken(user);// GENERATE A TOKEN FOR THE USER
 		MailEntity mail = new MailEntity();// CREATE A MAIL ENTITY
 		mail.setSubject(env.getProperty("user.activation.email.subject"));// SET THE APPROPRIATE VALUE FOR THE
@@ -174,11 +174,13 @@ public class UserServiceImpl implements UserService {
 	public void updatePassword(String userIdToken, UserDto userDto) {
 		PreConditions.checkNotMatch(userDto.getPassword(), userDto.getConfirmPassword(),
 				env.getProperty("user.password.mismatch.error.message"), UserException.class);
+
 		PreConditions.checkNotMatch(userDto.getEmail(), repository.findById(userIdToken).get().getEmail(),
 				env.getProperty("user.email.mismatch.error.message"), UserException.class);
 		UserEntity user = repository.getByEmail(userDto.getEmail()).get();// GET THE USER DEATISL BY THE EMAIL
 		user.setPassword(passwordEncoder.encode(userDto.getConfirmPassword()));// ENCODE THE PASSWORD
 		repository.save(user);// UPDATE THE PASSWORD
+//		userElasticRepository.save(user);
 	}
 
 	/*
@@ -196,12 +198,10 @@ public class UserServiceImpl implements UserService {
 
 		UserEntity userValue = repository.findById(userIdToken).get();// GET THE USER BY THE USER ID
 		UserEntity user = repository.getByEmail(userValue.getEmail()).get();// GET THE USER BY THE USER EMAIL ENTERED
-		System.out.println(userValue);
-		System.out.println(user);
-		System.out.println("--------");
 		PreConditions.checkNotMatch(user, userValue, env.getProperty("user.failed.mismatch.error.message"),
 				UserException.class);
 		repository.deleteById(userIdToken);// A VALID LOGIN AND SO DELETE THE USER
+//		userElasticRepository.deleteById(userIdToken);
 	}
 
 	@Override
